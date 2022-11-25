@@ -2,6 +2,15 @@ import React, { useState } from "react";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { db } from "../firebase";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,11 +20,43 @@ export default function SignUp() {
     password: "",
   });
   const { name, email, password } = formData;
+  const navigate = useNavigate();
   function onChange(e) {
     setFormData((prevState) => ({
       ...prevState,
       [e.target.id]: e.target.value,
     }));
+  }
+  async function onSubmit(e) {
+    // 再レンダリングを防ぐための記述
+    e.preventDefault();
+
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      // updateProfileは新しい項目を増やすためにある
+      updateProfile(auth.currentUser, {
+        displayName: name,
+      });
+      const user = userCredential.user;
+      const formDataCopy = { ...formData };
+      // formDataCopyの中のpasswordを削除
+      delete formDataCopy.password;
+      // formDataCopyにtimestampを追加
+      formDataCopy.timestamp = serverTimestamp();
+      // 上の内容をfirestore databaseに追加する
+      // user.uidのuserは42行目で定義したもの　const user = userCredential.user;
+      await setDoc(doc(db, "users", user.uid), formDataCopy);
+      toast.success("Sign up was successful")
+      // 上を入力後にホームページに飛ぶ
+      navigate("/");
+    } catch (error) {
+      toast.error("Something went wrong with the registration");
+    }
   }
   return (
     <section>
@@ -29,7 +70,7 @@ export default function SignUp() {
           />
         </div>
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-20">
-          <form>
+          <form onSubmit={onSubmit}>
             <input
               type="text"
               id="name"
