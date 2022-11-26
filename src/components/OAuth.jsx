@@ -7,14 +7,13 @@ import { useNavigate } from "react-router";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 
 export default function OAuth() {
-  const navigate= useNavigate()
+  const navigate = useNavigate();
   async function onGoogleClick() {
     try {
       const auth = getAuth();
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log(user);
 
       // check for the user googleでログインしたuser情報をfirestoreに追加する
       const docRef = doc(db, "users", user.uid);
@@ -28,10 +27,9 @@ export default function OAuth() {
           timestamp: serverTimestamp(),
         });
       }
-      navigate("/")
+      navigate("/");
     } catch (error) {
       toast.error("Could not authorize with Google");
-      console.log(error);
     }
   }
   return (
