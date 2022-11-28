@@ -49,7 +49,7 @@ export default function SignUp() {
       // formDataCopyにtimestampを追加
       formDataCopy.timestamp = serverTimestamp();
       // 上の内容をfirestore databaseに追加する
-      // user.uidのuserは42行目で定義したもの　const user = userCredential.user;
+      // user.uidのuserは42行目で定義したもの const user = userCredential.user;
       await setDoc(doc(db, "users", user.uid), formDataCopy);
       toast.success("Sign up was successful")
       // 上を入力後にホームページに飛ぶ
