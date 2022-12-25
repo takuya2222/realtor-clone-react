@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Spinner from "../components/Spinner";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import {
   getStorage,
   ref,
@@ -9,9 +9,13 @@ import {
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateListing() {
-  const auth = getAuth;
+  const navigate = useNavigate();
+  const auth = getAuth();
   const [geolocationEnabled, setGeolocationEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -72,7 +76,7 @@ export default function CreateListing() {
   async function onSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    if (discountedPrice >= regularPrice) {
+    if (+discountedPrice >= +regularPrice) {
       setLoading(false);
       toast.error("Discounted price needs to be less than regular price");
       return;
@@ -149,9 +153,24 @@ export default function CreateListing() {
     ).catch((error) => {
       setLoading(false);
       toast.error("Images not uploaded");
+      console.log(error);
       return;
     });
-    console.log(imgUrls);
+
+    const formDataCopy = {
+      ...formData,
+      imgUrls,
+      geolocation,
+      timestamp: serverTimestamp(),
+    };
+    delete formDataCopy.images;
+    !formDataCopy.offer && delete formDataCopy.discountedPrice;
+    delete formDataCopy.latitude;
+    delete formDataCopy.longitude;
+    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+    setLoading(false);
+    toast.success("Listing created");
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`);
   }
 
   if (loading) {
