@@ -40,14 +40,15 @@ export default function Listing() {
         pagination={{ type: "progressbar" }}
         effect="fade"
         modules={[EffectFade]}
-        autoplay={{ delay: 300 }}
+        autoplay={{ delay: 3000 }}
       >
         {listing.imgUrls.map((url, index) => (
           <SwiperSlide key={index}>
             <div
-              className="w-full overflow-hidden h-[300px]"
+              className="relative w-full overflow-hidden h-[300px]"
               style={{
                 background: `url(${listing.imgUrls[index]}) center no-repeat`,
+                backgroundSize: "cover",
               }}
             ></div>
           </SwiperSlide>
