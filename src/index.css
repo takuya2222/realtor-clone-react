@@ -13,3 +13,12 @@ body {
 .swiper-pagination-progressbar .swiper-pagination-progressbar-fill {
   background: #a8dadc !important;
 }
+
+/* 以下二つはスクロールバーを消すコード */
+html::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scrollbar-width: none;
+}
